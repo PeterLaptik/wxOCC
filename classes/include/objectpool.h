@@ -8,11 +8,11 @@ class ObjectPool
     public:
         ObjectPool();
         ~ObjectPool();
-        void AppendObject(Handle(AIS_InteractiveObject) shape);
-        bool Contains(Handle(AIS_InteractiveObject) object) const;
+        void AppendObject(Handle(AIS_InteractiveObject) object);
+        bool Contains(AIS_InteractiveObject *object) const;
 
     private:
-        std::vector<Handle(AIS_InteractiveObject)> m_shapes;
+        std::vector<Handle(AIS_InteractiveObject)> m_objects;
 
 };
 

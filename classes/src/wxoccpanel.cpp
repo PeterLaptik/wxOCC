@@ -94,7 +94,7 @@ void wxOccPanel::OnResize(wxSizeEvent &event)
 #include <typeinfo>
 void wxOccPanel::Test()
 {
-    wxString tmp;
+    wxString tmp = "Selected: ";
 
 
     //m_context->ClearSelected(false);
@@ -103,13 +103,20 @@ void wxOccPanel::Test()
     if(selection->IsEmpty())
         return;
 
-    AIS_Selection f;
-    f.Objects();
+//    AIS_Selection f;
+//    f.Objects();
 
-    //wxMessageBox("Not null");
-//    PrsMgr_PresentableObject *obj = static_cast<PrsMgr_PresentableObject*>(obj);
-//    obj->SetDisplayMode(4);
-    //m_view->Redraw();
+    const AIS_NListOfEntityOwner& objects = selection->Objects();
+    int sel_size = objects.Size();
+    tmp<<sel_size;
+
+    for(auto x: objects)
+    {
+        auto selected_object = x->Selectable();
+        AIS_InteractiveObject *real_object = dynamic_cast<AIS_InteractiveObject*>(selected_object.get());
+        wxString res = m_object_pool.Contains(real_object) ? "OK" : "Not found";
+        wxMessageBox(res);
+    }
 }
 
 
