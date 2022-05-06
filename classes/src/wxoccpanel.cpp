@@ -52,14 +52,10 @@ wxOccPanel::wxOccPanel(wxWindow *parent,
     m_view->SetBackgroundColor(Quantity_NOC_DARKSLATEGRAY4);
     m_view->MustBeResized();
     m_view->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_GOLD, 0.1, V3d_ZBUFFER);
-
-//    BRepPrimAPI_MakeCylinder cylinder(10., 50.);
-//    const TopoDS_Shape &shape = cylinder.Shape();
-//    aisthing = new AIS_Shape(shape);
-//    m_context->Display(aisthing, AIS_Shaded, 0, true);
-
     m_context->DisplayAll(true);
     m_view->Redraw();
+
+    //AIS_Shape::SelectionType(TopAbs_EDGE);
 }
 
 wxOccPanel::~wxOccPanel()
@@ -67,7 +63,7 @@ wxOccPanel::~wxOccPanel()
 
 }
 
-void wxOccPanel::AddShape(Handle(AIS_Shape) shape)
+void wxOccPanel::AddShape(Handle(AIS_InteractiveObject) shape)
 {
     m_object_pool.AppendObject(shape);
     m_context->Display(shape, AIS_Shaded, 0, true);
@@ -94,21 +90,12 @@ void wxOccPanel::OnResize(wxSizeEvent &event)
 #include <typeinfo>
 void wxOccPanel::Test()
 {
-    wxString tmp = "Selected: ";
-
-
-    //m_context->ClearSelected(false);
-
     const Handle(AIS_Selection) &selection = m_context->Selection();
     if(selection->IsEmpty())
         return;
 
-//    AIS_Selection f;
-//    f.Objects();
-
-    const AIS_NListOfEntityOwner& objects = selection->Objects();
+    const AIS_NListOfEntityOwner &objects = selection->Objects();
     int sel_size = objects.Size();
-    tmp<<sel_size;
 
     for(auto x: objects)
     {
@@ -116,6 +103,13 @@ void wxOccPanel::Test()
         AIS_InteractiveObject *real_object = dynamic_cast<AIS_InteractiveObject*>(selected_object.get());
         wxString res = m_object_pool.Contains(real_object) ? "OK" : "Not found";
         wxMessageBox(res);
+    }
+
+    if(objects.Size()==1)
+    {
+        auto selected_object = objects.First()->Selectable();
+        AIS_InteractiveObject *real_object = dynamic_cast<AIS_InteractiveObject*>(selected_object.get());
+        const SelectMgr_SequenceOfSelection& selections = real_object->Selections();
     }
 }
 

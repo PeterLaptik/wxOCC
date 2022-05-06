@@ -3,7 +3,8 @@
 #include <wx/artprov.h>
 #include <BRepPrimAPI_MakeCylinder.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
-
+#include <AIS_Line.hxx>
+#include <Geom_CartesianPoint.hxx>
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
     EVT_PAINT(MainFrame::OnPaint)
@@ -101,5 +102,10 @@ void MainFrame::OnToolButtonClick(wxCommandEvent &event)
         const TopoDS_Shape &shape = box.Shape();
         Handle(AIS_Shape) object = new AIS_Shape(shape);
         panel->AddShape(object);
+
+        Handle(Geom_Point) point1 = new Geom_CartesianPoint(100,50,10);
+        Handle(Geom_Point) point2 = new Geom_CartesianPoint(200,150,0);
+        Handle(AIS_Line) line = new AIS_Line(point1, point2);
+        panel->AddShape(line);
     }
 }

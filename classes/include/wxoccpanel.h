@@ -31,7 +31,7 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
                     const wxString &name = wxPanelNameStr);
 
         virtual ~wxOccPanel();
-        void AddShape(Handle(AIS_Shape) shape);
+        void AddShape(Handle(AIS_InteractiveObject) shape);
         void DeleteSelected(void);
         void Test(void);
 
