@@ -13,6 +13,7 @@
 #include <OpenGl_GraphicDriver.hxx>
 #include <V3d_View.hxx>
 #include <AIS_Shape.hxx>
+#include <AIS_ViewCube.hxx>
 
 class wxOccPanel: public wxPanel, public AIS_ViewController
 {
@@ -32,6 +33,8 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
 
         virtual ~wxOccPanel();
         void AddShape(Handle(AIS_InteractiveObject) shape);
+        void ShowGrid(bool show = true);
+        bool IsGridShown(void) const;
         void DeleteSelected(void);
         void Test(void);
 
@@ -45,10 +48,11 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
         void OnMouseMove(wxMouseEvent &event);
         void OnLeftMouseButtonDown(wxMouseEvent &event);
         void OnLeftMouseButtonUp(wxMouseEvent &event);
+        void OnRightMouseButtonDown(wxMouseEvent &event);
 
     private:
-        inline Aspect_VKeyMouse GetMouseButton(wxMouseEvent &event);
-        inline Aspect_VKeyFlags GetPressedKey(void);
+        inline Aspect_VKeyMouse GetMouseButton(wxMouseEvent &event) const;
+        inline Aspect_VKeyFlags GetPressedKey(void) const;
 
         double m_scale_factor;
         bool m_mouse_lb_clicked;
@@ -61,6 +65,7 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
         Handle(V3d_Viewer) m_viewer;
         Handle(V3d_View) m_view;
         Handle(AIS_InteractiveContext) m_context;
+        Handle(AIS_ViewCube) m_view_cube;
 
         ObjectPool m_object_pool;
         Handle(AIS_Shape) aisthing;

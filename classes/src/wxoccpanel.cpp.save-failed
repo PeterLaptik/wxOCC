@@ -1,8 +1,5 @@
 #include "../include/wxoccpanel.h"
 #include <BRepPrimAPI_MakeCylinder.hxx>
-#include <AIS_Line.hxx>
-#include <AIS_Point.hxx>
-#include <Geom_CartesianPoint.hxx>
 
 // Nominal mouse wheel amount for one click (known as a 'detent')
 // See description in MSDN
@@ -53,14 +50,15 @@ wxOccPanel::wxOccPanel(wxWindow *parent,
     // makes everything come alive
     m_viewer->SetLightOn();
 
-    m_view->SetBackgroundColor(Quantity_NOC_BLACK);
+    m_view_cube = new AIS_ViewCube();
+    m_object_pool.AppendObject(m_view_cube);
+
+    m_view->SetBackgroundColor(Quantity_NOC_DARKSLATEGRAY4);
     m_view->MustBeResized();
     m_view->TriedronDisplay(Aspect_TOTP_LEFT_LOWER, Quantity_NOC_GOLD, 0.1, V3d_ZBUFFER);
     m_context->DisplayAll(true);
     m_view->Redraw();
 
-    m_view_cube = new AIS_ViewCube();
-    AddShape(m_view_cube);
 
     // Set for sketch mode
     //m_context->Activate(TopAbs_FACE, Standard_True);
@@ -99,7 +97,6 @@ void wxOccPanel::OnResize(wxSizeEvent &event)
 #include <typeinfo>
 void wxOccPanel::Test()
 {
-    /*
     const Handle(AIS_Selection) &selection = m_context->Selection();
     if(selection->IsEmpty())
         return;
@@ -115,6 +112,7 @@ void wxOccPanel::Test()
         auto selected_object = x->Selectable();
         AIS_InteractiveObject *real_object = dynamic_cast<AIS_InteractiveObject*>(selected_object.get());
         wxString res = m_object_pool.Contains(real_object) ? "OK" : "Not found";
+        wxMessageBox(res);
     }
 
     if(objects.Size()==1)
@@ -138,36 +136,13 @@ void wxOccPanel::Test()
 
     if(m_context->HasDetected() && m_context->MainSelector()->NbPicked()>0)
     {
-        //auto x = m_context->MainSelector()->OnePicked();
-        //wxMessageBox("QQQQ");
+        auto x = m_context->MainSelector()->OnePicked();
+        wxMessageBox("QQQQ");
     }
-    */
 
     m_context->Activate(TopAbs_FACE, Standard_True);
-    ShowGrid(!IsGridShown());
 }
 
-void wxOccPanel::ShowGrid(bool show)
-{
-    if(!show)
-    {
-        m_viewer->DeactivateGrid();
-        m_view->Redraw();
-        return;
-    }
-    gp_Pnt pnt(0,0,50);
-    gp_Dir dir(0, 0.5, 0.5);
-    gp_Pln plane(pnt, dir);
-    gp_Ax3 ax(plane.Location(), plane.Axis().Direction());
-    m_viewer->SetPrivilegedPlane(ax);
-    m_viewer->SetRectangularGridValues(0, 1, 10, 10, 0);
-    m_viewer->SetRectangularGridGraphicValues(100, 100, 0);
-    m_viewer->ActivateGrid(Aspect_GT_Rectangular, Aspect_GDM_Points);
-    Graphic3d_Vertex vert(0.0f,0.0f,0.0f);
-    //m_viewer->ShowGridEcho(m_view, vert);
-    //m_viewer->HideGridEcho(m_view);
-    m_view->Redraw();
-}
 
 void wxOccPanel::OnMouseWheel(wxMouseEvent &event)
 {
@@ -187,46 +162,18 @@ void wxOccPanel::OnLeftMouseButtonDown(wxMouseEvent &event)
                                          flags, true);
 }
 
-#include <BRepBuilderAPI_MakeFace.hxx>
-#include <BRepAdaptor_Surface.hxx>
-#include <GeomAPI_ProjectPointOnSurf.hxx>
-#include <Aspect_Grid.hxx>
 void wxOccPanel::OnRightMouseButtonDown(wxMouseEvent &event)
 {
     Graphic3d_Vec2i pos(event.GetX(), event.GetY());
-    Standard_Real x, y, z;
-    m_view->Convert(event.GetX(), event.GetY(), x, y, z);
-
-    // Default plane
-    gp_Pnt pnt(0,0,50);
-    gp_Dir dir(0, 0.5, 0.5);
-    gp_Pln plane(pnt, dir);
-
-    TopoDS_Face face = BRepBuilderAPI_MakeFace(plane);
-    BRepAdaptor_Surface surface(face);
-    const GeomAdaptor_Surface& geomAdapSurf = surface.Surface();
-    const Handle(Geom_Surface)& geomSurf = geomAdapSurf.Surface();
-    gp_Pnt picked(x, y, z);
-    GeomAPI_ProjectPointOnSurf prj(picked, geomSurf);
-    Standard_Integer index=prj.NbPoints();
-    gp_Pnt ResultPoint = prj.Point(index);
-
 
     if(m_context->HasDetected() && m_context->MainSelector()->NbPicked()>0)
     {
         auto x = m_context->MainSelector()->OnePicked();
         Graphic3d_Vec2i pos(event.GetX(), event.GetY());
-        //wxMessageBox("QQQQ");
+        wxMessageBox("QQQQ");
     }
-
-    Handle(Geom_Point) cpoint1 = new Geom_CartesianPoint(ResultPoint.X(), ResultPoint.Y(), ResultPoint.Z());
-    Handle(AIS_Point) point1 = new AIS_Point(cpoint1);
-    Handle(Geom_Point) cpoint2 = new Geom_CartesianPoint(0,0,0);
-    Handle(AIS_Point) point2 = new AIS_Point(cpoint2);
-    Handle(AIS_Line) line = new AIS_Line(cpoint1, cpoint2);
-    AddShape(line);
-
-
+    Standard_Real x, y, z;
+    m_view->Convert(event.GetX(), event.GetY(), x, y, z);
 }
 
 void wxOccPanel::OnLeftMouseButtonUp(wxMouseEvent &event)
@@ -248,7 +195,7 @@ void wxOccPanel::OnMouseMove(wxMouseEvent &event)
     AIS_ViewController::FlushViewEvents(m_context, m_view, true);
 }
 
-Aspect_VKeyMouse wxOccPanel::GetMouseButton(wxMouseEvent &event) const
+Aspect_VKeyMouse wxOccPanel::GetMouseButton(wxMouseEvent &event)
 {
     int button = event.GetButton();
     switch(button)
@@ -261,7 +208,7 @@ Aspect_VKeyMouse wxOccPanel::GetMouseButton(wxMouseEvent &event) const
     return Aspect_VKeyMouse_NONE;
 }
 
-Aspect_VKeyFlags wxOccPanel::GetPressedKey() const
+Aspect_VKeyFlags wxOccPanel::GetPressedKey()
 {
     if(wxGetKeyState(WXK_RAW_CONTROL))
         return Aspect_VKeyFlags_CTRL;
@@ -271,9 +218,4 @@ Aspect_VKeyFlags wxOccPanel::GetPressedKey() const
         return Aspect_VKeyFlags_ALT;
 
     return Aspect_VKeyFlags_NONE;
-}
-
-bool wxOccPanel::IsGridShown() const
-{
-    return m_viewer->IsGridActive();
 }

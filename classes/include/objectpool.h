@@ -3,6 +3,7 @@
 
 #include <AIS_Shape.hxx>
 
+///\brief Geometric object handler.
 class ObjectPool
 {
     public:
