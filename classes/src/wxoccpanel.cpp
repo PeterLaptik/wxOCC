@@ -194,7 +194,8 @@ void wxOccPanel::OnLeftMouseButtonDown(wxMouseEvent &event)
 void wxOccPanel::OnRightMouseButtonDown(wxMouseEvent &event)
 {
     Graphic3d_Vec2i pos(event.GetX(), event.GetY());
-    Standard_Real x, y, z;
+    Standard_Real x, y, z, vx, vy, vz;
+    //m_view->ConvertToGrid(event.GetX(), event.GetY(), x, y, z);
     m_view->Convert(event.GetX(), event.GetY(), x, y, z);
 
     // Default plane
@@ -202,13 +203,21 @@ void wxOccPanel::OnRightMouseButtonDown(wxMouseEvent &event)
     gp_Dir dir(0, 0.5, 0.5);
     gp_Pln plane(pnt, dir);
 
+    // Eye
+    Standard_Real ex, ey, ez;
+    m_view->Eye(ex, ey, ez);
+
+    wxString tmp = "EYE: ";
+    tmp<<"x = "<<ex<<", y = "<<ey<<", z = "<<ez;
+    //wxMessageBox(tmp);
+
     TopoDS_Face face = BRepBuilderAPI_MakeFace(plane);
     BRepAdaptor_Surface surface(face);
     const GeomAdaptor_Surface& geomAdapSurf = surface.Surface();
     const Handle(Geom_Surface)& geomSurf = geomAdapSurf.Surface();
     gp_Pnt picked(x, y, z);
     GeomAPI_ProjectPointOnSurf prj(picked, geomSurf);
-    Standard_Integer index=prj.NbPoints();
+    Standard_Integer index = prj.NbPoints();
     gp_Pnt ResultPoint = prj.Point(index);
 
 
@@ -219,6 +228,7 @@ void wxOccPanel::OnRightMouseButtonDown(wxMouseEvent &event)
         //wxMessageBox("QQQQ");
     }
 
+    //Handle(Geom_Point) cpoint1 = new Geom_CartesianPoint(x, y, z);
     Handle(Geom_Point) cpoint1 = new Geom_CartesianPoint(ResultPoint.X(), ResultPoint.Y(), ResultPoint.Z());
     Handle(AIS_Point) point1 = new AIS_Point(cpoint1);
     Handle(Geom_Point) cpoint2 = new Geom_CartesianPoint(0,0,0);
