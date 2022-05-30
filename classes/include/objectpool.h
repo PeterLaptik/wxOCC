@@ -18,7 +18,6 @@ class ObjectPool
 
     private:
         std::vector<Handle(AIS_InteractiveObject)> m_objects;
-        std::vector<Handle(AIS_InteractiveObject)> m_default_objects;
 
 };
 

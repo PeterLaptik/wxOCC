@@ -62,6 +62,10 @@ wxOccPanel::wxOccPanel(wxWindow *parent,
     m_view_cube = new AIS_ViewCube();
     AddShape(m_view_cube);
 
+    gp_Pnt point(0, 0, 0);
+    gp_Dir direction(0, 0, 1);
+    gp_Ax1 axis(point, direction);
+    m_plane.SetAxis(axis);
     // Set for sketch mode
     //m_context->Activate(TopAbs_FACE, Standard_True);
     //AIS_Shape::SelectionType(TopAbs_EDGE);
@@ -155,9 +159,11 @@ void wxOccPanel::ShowGrid(bool show)
         m_view->Redraw();
         return;
     }
-    gp_Pnt pnt(0,0,50);
-    gp_Dir dir(0, 0.5, 0.5);
+    gp_Pnt pnt(0,0,0);
+    gp_Dir dir(0, 0, 1);
     gp_Pln plane(pnt, dir);
+
+
     gp_Ax3 ax(plane.Location(), plane.Axis().Direction());
     m_viewer->SetPrivilegedPlane(ax);
     m_viewer->SetRectangularGridValues(0, 1, 10, 10, 0);
@@ -200,7 +206,7 @@ void wxOccPanel::OnRightMouseButtonDown(wxMouseEvent &event)
 
     // Default plane
     gp_Pnt pnt(0,0,50);
-    gp_Dir dir(0, 0.5, 0.5);
+    gp_Dir dir(0, 0, 1);
     gp_Pln plane(pnt, dir);
 
     // Eye
@@ -256,6 +262,41 @@ void wxOccPanel::OnMouseMove(wxMouseEvent &event)
 
     AIS_ViewController::UpdateMousePosition(pos, buttons, flags, false);
     AIS_ViewController::FlushViewEvents(m_context, m_view, true);
+
+    /** tmp **/
+    Standard_Real x, y, z;
+    //m_view->ConvertToGrid(event.GetX(), event.GetY(), x, y, z);
+    m_view->Convert(event.GetX(), event.GetY(), x, y, z);
+    if(tmp_line.get()!=nullptr)
+        m_context->Remove(tmp_line, true);
+
+
+    const Handle(Graphic3d_Camera)&camera = m_view->Camera();
+    const gp_Dir &direction = camera->Direction();
+
+    TopoDS_Face face = BRepBuilderAPI_MakeFace(m_plane);
+    BRepAdaptor_Surface surface(face);
+    const GeomAdaptor_Surface& geomAdapSurf = surface.Surface();
+    const Handle(Geom_Surface)& geomSurf = geomAdapSurf.Surface();
+
+    gp_Pnt picked(x, y, z);
+    GeomAPI_ProjectPointOnSurf prj(picked, geomSurf);
+
+    double au, av; //the u- and v-coordinates of the projected point
+    prj.LowerDistanceParameters(au, av); //get the nearest projection
+
+    Standard_Integer index = prj.NbPoints();
+    gp_Pnt ResultPoint = prj.Point(index);
+    ResultPoint.SetX(au);
+    ResultPoint.SetY(av);
+
+    Handle(Geom_Point) cpoint1 = new Geom_CartesianPoint(ResultPoint.X(), ResultPoint.Y(), ResultPoint.Z());
+    Handle(AIS_Point) point1 = new AIS_Point(cpoint1);
+    Handle(Geom_Point) cpoint2 = new Geom_CartesianPoint(0,0,0);
+    Handle(AIS_Point) point2 = new AIS_Point(cpoint2);
+    tmp_line = new AIS_Line(cpoint1, cpoint2);
+    AddShape(tmp_line);
+
 }
 
 Aspect_VKeyMouse wxOccPanel::GetMouseButton(wxMouseEvent &event) const

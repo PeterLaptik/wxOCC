@@ -14,6 +14,7 @@
 #include <V3d_View.hxx>
 #include <AIS_Shape.hxx>
 #include <AIS_ViewCube.hxx>
+#include <AIS_Line.hxx>
 
 class wxOccPanel: public wxPanel, public AIS_ViewController
 {
@@ -53,6 +54,9 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
     private:
         inline Aspect_VKeyMouse GetMouseButton(wxMouseEvent &event) const;
         inline Aspect_VKeyFlags GetPressedKey(void) const;
+
+        gp_Pln m_plane;
+        Handle(AIS_Line) tmp_line;
 
         double m_scale_factor;
         bool m_mouse_lb_clicked;
