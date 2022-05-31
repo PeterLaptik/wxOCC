@@ -54,6 +54,7 @@ class wxOccPanel: public wxPanel, public AIS_ViewController
     private:
         inline Aspect_VKeyMouse GetMouseButton(wxMouseEvent &event) const;
         inline Aspect_VKeyFlags GetPressedKey(void) const;
+        inline void CreateViewCube(void);
 
         gp_Pln m_plane;
         Handle(AIS_Line) tmp_line;

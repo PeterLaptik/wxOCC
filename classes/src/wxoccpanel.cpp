@@ -59,9 +59,6 @@ wxOccPanel::wxOccPanel(wxWindow *parent,
     m_context->DisplayAll(true);
     m_view->Redraw();
 
-    m_view_cube = new AIS_ViewCube();
-    AddShape(m_view_cube);
-
     gp_Pnt point(0, 0, 0);
     gp_Dir direction(0, 0, 1);
     gp_Ax1 axis(point, direction);
@@ -69,6 +66,8 @@ wxOccPanel::wxOccPanel(wxWindow *parent,
     // Set for sketch mode
     //m_context->Activate(TopAbs_FACE, Standard_True);
     //AIS_Shape::SelectionType(TopAbs_EDGE);
+
+    CreateViewCube();
 }
 
 wxOccPanel::~wxOccPanel()
@@ -297,6 +296,23 @@ void wxOccPanel::OnMouseMove(wxMouseEvent &event)
     tmp_line = new AIS_Line(cpoint1, cpoint2);
     AddShape(tmp_line);
 
+}
+
+void wxOccPanel::CreateViewCube()
+{
+    m_view_cube = new AIS_ViewCube;
+    m_view_cube->SetBoxColor(Quantity_NOC_BLUE2);
+    m_view_cube->SetDrawAxes(true);
+    m_view_cube->SetSize(40);
+    m_view_cube->SetFontHeight(12);
+    /*
+    m_view_cube->SetTransformPersistence(
+        new Graphic3d_TransformPers(
+            Graphic3d_TMF_TriedronPers,
+            Aspect_TOTP_LEFT_UPPER,
+            Graphic3d_Vec2i(85, 85)));
+    */
+    m_context->Display(m_view_cube, false);
 }
 
 Aspect_VKeyMouse wxOccPanel::GetMouseButton(wxMouseEvent &event) const
